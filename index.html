@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Newt on Newton</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    /* リセット */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      font-family: 'Helvetica Neue', sans-serif;
+      scroll-behavior: smooth;
+      color: #1a2b3c;
+      background-color: transparent;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: url('bg-blur.jpg') no-repeat center center / cover;
+      z-index: -1;
+    }
+    /* ローディング */
+    #loader {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: #cceef5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2em;
+      color: #1a2b3c;
+      z-index: 10000;
+      opacity: 1;
+      transition: opacity 1s ease;
+    }
+    #main-content {
+      display: none;
+      animation: fadeIn 2s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ナビゲーション */
+    nav {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(6px);
+      z-index: 999;
+      display: flex;
+      justify-content: center;
+      padding: 10px 0;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 25px;
+    }
+    nav ul li a {
+      text-decoration: none;
+      color: #0d3b66;
+      font-weight: bold;
+      font-size: 1em;
+      transition: color 0.3s;
+    }
+    nav ul li a:hover {
+      color: #1e88e5;
+    }
+
+    /* ハンバーガーメニューアイコン */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: space-around;
+      width: 25px;
+      height: 22px;
+      cursor: pointer;
+      margin-right: 20px;
+    }
+    .hamburger div {
+      width: 100%;
+      height: 3px;
+      background-color: #0d3b66;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+
+    /* ハンバーガーメニュー開閉時のアニメーション */
+    .hamburger.active div:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+    .hamburger.active div:nth-child(2) {
+      opacity: 0;
+    }
+    .hamburger.active div:nth-child(3) {
+      transform: rotate(-45deg) translate(5px, -5px);
+    }
+
+    /* メニュー（スマホ版非表示） */
+    nav ul {
+      margin: 0;
+    }
+
+    /* セクション共通 */
+    section {
+      min-height: 100vh;
+      padding: 100px 20px 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    /* セクション1: トップ */
+    #top h1 {
+      font-family: 'Yu Mincho', '游明朝', serif;
+      font-size: 3.5em;
+      color: #0d3b66;
+      background-color: transparent;
+      padding: 20px 40px;
+      border-radius: 10px;
+    }
+    /* セクション2: info */
+    #info {
+      background-color: white;
+    }
+    #info h2 {
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+    .info-item {
+      margin: 10px 0;
+      font-size: 1.1em;
+    }
+    /* セクション3: メンバー */
+    #members {
+      background-color: transparent;
+    }
+    #members h2 {
+      font-size: 2em;
+      margin-bottom: 40px;
+    }
+    .member-container {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+    .member {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 120px;
+    }
+    .member img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #a6dcef;
+      margin-bottom: 10px;
+    }
+    .member h3 {
+      font-size: 1.2em;
+      margin-bottom: 5px;
+    }
+    /* セクション4: Contact */
+    #contact {
+      background: rgba(255,255,255,0.6);
+    }
+    #contact h2 {
+      margin-bottom: 20px;
+    }
+    #contact a {
+      font-size: 1.2em;
+      color: #1e88e5;
+      text-decoration: none;
+    }
+    #contact a:hover {
+      text-decoration: underline;
+    }
+    /* セクション5: SNS */
+    #sns {
+      background-color: white;
+    }
+    #sns h2 {
+      margin-bottom: 20px;
+    }
+    .sns-links a {
+      margin: 0 10px;
+      color: #0d47a1;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .sns-links a:hover {
+      text-decoration: underline;
+    }
+
+    /* コピーライト */
+    #copyright {
+      background-color: #f5f5f5;
+      text-align: center;
+      padding: 15px 10px;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+    }
+
+    /* レスポンシブ */
+    @media (max-width: 768px) {
+      nav {
+        justify-content: flex-start;
+        padding: 10px 20px;
+      }
+      nav ul {
+        position: fixed;
+        top: 55px;
+        left: 0;
+        width: 100%;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(6px);
+        flex-direction: column;
+        gap: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        z-index: 998;
+      }
+      nav ul.open {
+        max-height: 300px; /* 適宜調整 */
+      }
+      nav ul li {
+        border-bottom: 1px solid #ccc;
+        margin: 0;
+      }
+      nav ul li a {
+        display: block;
+        padding: 15px 20px;
+        font-size: 1.2em;
+      }
+      .hamburger {
+        display: flex;
+      }
+      /* メンバー横並び → 縦並び */
+      .member-container {
+        flex-direction: column;
+        gap: 30px;
+      }
+      .member {
+        width: 100%;
+        max-width: 250px;
+        margin: 0 auto;
+      }
+      /* セクションのpadding調整 */
+      section {
+        padding: 80px 15px 50px;
+      }
+      #top h1 {
+        font-size: 2.4em;
+        padding: 15px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ローディング -->
+  <div id="loader">now loading</div>
+
+  <!-- ナビゲーション -->
+  <nav>
+    <div class="hamburger" id="hamburger" aria-label="メニュー" role="button" tabindex="0">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <ul id="nav-menu">
+      <li><a href="#top">Top</a></li>
+      <li><a href="#info">Information</a></li>
+      <li><a href="#members">Member</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="#sns">SNS</a></li>
+    </ul>
+  </nav>
+
+  <!-- メイン -->
+  <div id="main-content">
+
+    <!-- セクション1: トップ -->
+    <section id="top">
+      <h1>Newt on Newton</h1>
+    </section>
+
+    <!-- セクション2: Information -->
+    <section id="info">
+      <h2>Information</h2>
+      <div class="info-item"><strong>2025.09.24</strong><br>新曲「月夜を洗う」Official Music Video公開!</div>
+      <div class="info-item"><strong>2025.04.28</strong><br>新曲「お月様」Official Music Video公開!</div>
+    </section>
+
+    <!-- セクション3: Members -->
+    <section id="members">
+      <h2>Member</h2>
+      <div class="member-container">
+        <div class="member">
+          <img src="gobou.jpg" alt="午後ごぼう" />
+          <h3>午後ごぼう</h3>
+        </div>
+        <div class="member">
+          <img src="akutsu.jpg" alt="あくつ" />
+          <h3>あくつ</h3>
+        </div>
+        <div class="member">
+          <img src="hanamidori.jpg" alt="Hanamidori" />
+          <h3>Hanamidori</h3>
+        </div>
+      </div>
+    </section>
+
+    <!-- セクション4: Contact -->
+    <section id="contact">
+      <h2>Contact</h2>
+      <p><a href="mailto:newtonnewton1349@gmail.com">MAIL</a></p>
+    </section>
+
+    <!-- セクション5: SNS -->
+    <section id="sns">
+      <h2>SNS</h2>
+      <div class="sns-links">
+        <a href="#" target="_blank" rel="noopener noreferrer">Twitter</a>
+        <a href="#" target="_blank" rel="noopener noreferrer">Instagram</a>
+        <a href="https://www.youtube.com/@NewtonNewton-y2p" target="_blank" rel="noopener noreferrer">Youtube</a>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- コピーライト -->
+  <footer id="copyright">
+    <p>&copy; 2025 Newt on Newton. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // ローディング画面フェードアウト処理
+    window.addEventListener('load', () => {
+      const loader = document.getElementById('loader');
+      const main = document.getElementById('main-content');
+      loader.style.opacity = '0';
+      setTimeout(() => {
+        loader.style.display = 'none';
+        main.style.display = 'block';
+      }, 1000);
+    });
+
+    // ハンバーガーメニュー開閉
+    const hamburger = document.getElementById('hamburger');
+    const navMenu = document.getElementById('nav-menu');
+
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('active');
+      navMenu.classList.toggle('open');
+    });
+
+    // メニュークリック時に閉じてスクロール
+    document.querySelectorAll('#nav-menu a').forEach(link => {
+      link.addEventListener('click', () => {
+        if (navMenu.classList.contains('open')) {
+          hamburger.classList.remove('active');
+          navMenu.classList.remove('open');
+        }
+      });
+    });
+
+    // ハンバーガーにキーボード対応（Enterキーで開閉）
+    hamburger.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        hamburger.click();
+      }
+    });
+  </script>
+</body>
+</html>
